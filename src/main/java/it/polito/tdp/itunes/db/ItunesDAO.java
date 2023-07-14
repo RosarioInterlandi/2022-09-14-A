@@ -4,10 +4,12 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
 import it.polito.tdp.itunes.model.Album;
 import it.polito.tdp.itunes.model.Artist;
 import it.polito.tdp.itunes.model.Genre;
@@ -137,6 +139,64 @@ public class ItunesDAO {
 			e.printStackTrace();
 			throw new RuntimeException("SQL Error");
 		}
-		return result;
+		return result; 
+		
 	}
+	public List<Album> getVertici(int durata){
+		String sql =  "SELECT a.*, SUM(t.Milliseconds) AS durata "
+				+ "FROM album a ,track t "
+				+ "WHERE  t.AlbumId = a.AlbumId "
+				+ "GROUP BY t.AlbumId "
+				+ "HAVING SUM(t.Milliseconds)> ?";
+		List<Album> result = new LinkedList<>();
+		
+		try {
+			Connection conn = DBConnect.getConnection();
+			PreparedStatement st = conn.prepareStatement(sql);
+			st.setInt(1, durata);
+			ResultSet res = st.executeQuery();
+
+			while (res.next()) {
+				Album a = new Album(res.getInt("AlbumId"), res.getString("Title"), res.getDouble("durata"));
+				result.add(a);
+				
+				
+			}
+			conn.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new RuntimeException("SQL Error");
+		}
+		return result;
+		
+	}
+	public List<Integer> playlistAlbum(Album alb ){
+		String sql = "SELECT  pt.PlaylistId "
+				+ "FROM playlisttrack pt, track t "
+				+ "WHERE t.TrackId = pt.TrackId "
+				+ "AND t.AlbumId = ?";
+		
+		List<Integer> result = new LinkedList<>();
+		
+		try {
+			Connection conn = DBConnect.getConnection();
+			PreparedStatement st = conn.prepareStatement(sql);
+			st.setInt(1, alb.getAlbumId());
+			ResultSet res = st.executeQuery();
+
+			while (res.next()) {
+				result.add(res.getInt("PlaylistId"));
+				
+				
+			}
+			conn.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new RuntimeException("SQL Error");
+		}
+		return result;
+		
+	}
+	
+	
 }

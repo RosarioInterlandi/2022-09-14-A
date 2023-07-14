@@ -5,7 +5,11 @@
 package it.polito.tdp.itunes;
 
 import java.net.URL;
+import java.time.Duration;
 import java.util.ResourceBundle;
+import java.util.Set;
+
+import it.polito.tdp.itunes.model.Album;
 import it.polito.tdp.itunes.model.Model;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -34,7 +38,7 @@ public class FXMLController {
     private Button btnSet; // Value injected by FXMLLoader
 
     @FXML // fx:id="cmbA1"
-    private ComboBox<?> cmbA1; // Value injected by FXMLLoader
+    private ComboBox<Album> cmbA1; // Value injected by FXMLLoader
 
     @FXML // fx:id="txtDurata"
     private TextField txtDurata; // Value injected by FXMLLoader
@@ -47,12 +51,27 @@ public class FXMLController {
 
     @FXML
     void doComponente(ActionEvent event) {
-    	
+    	Album a = cmbA1.getValue();
+    	Set<Album> componenteConnessa =this.model.componenteConnessa(a);
+    	txtResult.setText("Componente connesa di :"+ a.getTitle());
+    	txtResult.appendText("\nDimensione componente: "+componenteConnessa.size());
+    	Double durataComponente = 0.0;
+    	for (Album alb : componenteConnessa) {
+    		durataComponente += alb.getDurata();
+    	}
+    	durataComponente = durataComponente/(1000*60);
+    	txtResult.appendText("\nDurata complessiva componente connessa :"+ durataComponente+" minuti");
     }
 
     @FXML
     void doCreaGrafo(ActionEvent event) {
-    	
+    	Integer durata = Integer.parseInt( txtDurata.getText());
+    	this.model.BuildGrafo(durata);
+    	if (this.model.getVertici().size()!=0) {
+    		txtResult.appendText("Grafo creato con successo "
+    	+this.model.numVertici()+" vertici "+ this.model.numEdges()+" archi\n");	
+    	}
+    	cmbA1.getItems().addAll(this.model.getVertici());
     }
 
     @FXML
